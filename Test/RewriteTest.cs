@@ -1,4 +1,7 @@
+using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
+using Xunit;
 
 namespace Test
 {
@@ -27,7 +30,7 @@ namespace Test
                     && node.Attributes[0].Value == "FileName")
                 {
                     var originalValue = node.Attributes[1].Value;
-                    Assert.True(!originalValue.Contains(Path.DirectorySeparatorChar));
+                    Assert.True(!originalValue.Contains(Path.DirectorySeparatorChar.ToString()));
                 }
             }
         }

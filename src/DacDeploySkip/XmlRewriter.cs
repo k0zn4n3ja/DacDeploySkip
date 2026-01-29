@@ -1,4 +1,7 @@
-﻿using System.Xml;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace DacDeploySkip
 {
@@ -7,16 +10,16 @@ namespace DacDeploySkip
     /// </summary>
     public class XmlRewriter
     {
-        public async Task RewriteXmlMetadataAsync(string modelFile)
+        public Task RewriteXmlMetadataAsync(string modelFile)
         {
             const string fileKey = "FileName";
             const string symbolsKey = "AssemblySymbolsName";
-            var contents = await File.ReadAllTextAsync(modelFile);
+            var contents = File.ReadAllText(modelFile);
 
-            if (!contents.Contains($"<Metadata Name=\"{fileKey}\" ", StringComparison.Ordinal)
-                && !contents.Contains($"<Metadata Name=\"{symbolsKey}\" ", StringComparison.Ordinal))
+            if (contents.IndexOf($"<Metadata Name=\"{fileKey}\" ", StringComparison.Ordinal) < 0
+                && contents.IndexOf($"<Metadata Name=\"{symbolsKey}\" ", StringComparison.Ordinal) < 0)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var xmlDoc = new XmlDocument();
@@ -37,11 +40,13 @@ namespace DacDeploySkip
             }
 
             xmlDoc.Save(modelFile);
+
+            return Task.CompletedTask;
         }
 
         private static void ReplaceValue(string key, XmlNode metaData)
         {
-             if (metaData.Attributes != null 
+            if (metaData.Attributes != null
                 && metaData.Attributes.Count == 2
                 && metaData.Attributes[0].Name == "Name"
                 && metaData.Attributes[0].Value == key)
